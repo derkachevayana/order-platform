@@ -1,0 +1,129 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: my_database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d my_database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    container_name: adminer_panel
+    restart: always
+    ports:
+      - "8091:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb_server
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({hello: 1})' --quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express_panel
+    restart: always
+    ports:
+      - "8092:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: mongoexpressuser
+      ME_CONFIG_BASICAUTH_PASSWORD: mongoexpresspass
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda_broker
+    restart: always
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --overprovisioned
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/lib/redpanda
+    healthcheck:
+      test: [ "CMD-SHELL", "rpk cluster info || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redpanda-console:
+      image: redpandadata/console:latest
+      container_name: redpanda_ui
+      restart: always
+      ports:
+        - "8093:8080"
+      environment:
+        - KAFKA_BROKERS=redpanda:9092
+      depends_on:
+        redpanda:
+          condition: service_healthy
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: schema-registry
+    restart: always
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    ports:
+      - "8094:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'PLAINTEXT://redpanda:9092'
+
+volumes:
+  redpanda_data:
+  redis_data:

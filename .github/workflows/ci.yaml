@@ -1,0 +1,42 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Checkstyle for all microservices
+        run: |
+            for pom in $(find . -name "pom.xml" -not -path "./pom.xml"); do
+              service_dir=$(dirname "$pom")
+              echo "--------------------------------------------------"
+              echo "Checking style in service: $service_dir"
+              echo "--------------------------------------------------"
+              mvn -f "$pom" checkstyle:check
+            done
+
+      - name: Run Tests for all microservices
+        run: |
+            for pom in $(find . -name "pom.xml" -not -path "./pom.xml"); do
+              service_dir=$(dirname "$pom")
+              echo "--------------------------------------------------"
+              echo "Running tests in service: $service_dir"
+              echo "--------------------------------------------------"
+              mvn -f "$pom" clean test
+            done

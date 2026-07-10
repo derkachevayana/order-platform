@@ -1,0 +1,14 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/derkachevayana/api-gateway
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+probes:
+  path: /actuator/health
+  port: 8080

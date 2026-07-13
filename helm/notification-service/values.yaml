@@ -1,3 +1,4 @@
+nameOverride: "notification-service"
 replicaCount: 1
 
 image:

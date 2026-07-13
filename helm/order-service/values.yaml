@@ -1,3 +1,4 @@
+nameOverride: "order-service"
 replicaCount: 1
 
 image:

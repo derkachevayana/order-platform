@@ -1,3 +1,4 @@
+nameOverride: "user-service"
 replicaCount: 1
 
 image:

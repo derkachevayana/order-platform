@@ -1,3 +1,4 @@
+nameOverride: "inventory-service"
 replicaCount: 1
 
 image:

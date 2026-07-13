@@ -1,3 +1,4 @@
+nameOverride: "api-gateway"
 replicaCount: 1
 
 image:

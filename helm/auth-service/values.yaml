@@ -1,3 +1,4 @@
+nameOverride: "auth-service"
 replicaCount: 1
 
 image:

@@ -23,7 +23,7 @@ k3d-deploy:
 	helm upgrade --install user-service ./helm/user-service
 	helm upgrade --install api-gateway ./helm/api-gateway
 	helm upgrade --install order-service ./helm/order-service
-	helm upgrade --install payment-service ./helm/payment-service
+	helm upgrade --install payment-service ./helm/product-service
 	helm upgrade --install inventory-service ./helm/inventory-service
 	helm upgrade --install notification-service ./helm/notification-service
 	@echo "All services are up-to-date in Kubernetes!"

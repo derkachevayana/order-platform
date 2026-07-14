@@ -1,0 +1,15 @@
+nameOverride: "inventory-service"
+replicaCount: 1
+
+image:
+  repository: ghcr.io/derkachevayana/inventory-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8084
+
+probes:
+  path: /actuator/health
+  port: 8084

@@ -1,0 +1,15 @@
+nameOverride: "product-service"
+replicaCount: 1
+
+image:
+  repository: ghcr.io/derkachevayana/product-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8083
+
+probes:
+  path: /actuator/health
+  port: 8083
